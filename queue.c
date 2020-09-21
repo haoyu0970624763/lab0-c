@@ -12,7 +12,9 @@
 queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
-    if (q) {
+    if (!q) {
+        return NULL;
+    } else {
         q->head = NULL;
         q->tail = NULL;
         q->size = 0;
@@ -23,6 +25,9 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
+    if (!q) {
+        return;
+    }
     while (q->head) {
         list_ele_t *tmp = q->head;
         q->head = q->head->next;
@@ -50,15 +55,22 @@ bool q_insert_head(queue_t *q, char *s)
         return false;
     }
 
-    // Allocate space and copy the string
-    newHead->value = malloc(sizeof(char) * (strlen(s) + 1));
+    size_t length;
+    if (!s) {
+        length = 0;
+    } else {
+        length = strlen(s);
+    }
+
+    newHead->value = malloc(sizeof(char) * (length + 1));
+
     // check malloc
     if (!newHead->value) {
         free(newHead);
         return false;
     }
-    memset(newHead->value, '\0', strlen(s) + 1);
-    strncpy(newHead->value, s, strlen(s));
+    memset(newHead->value, '\0', length + 1);
+    strncpy(newHead->value, s, length);
 
     newHead->next = q->head;
     q->head = newHead;
@@ -88,13 +100,20 @@ bool q_insert_tail(queue_t *q, char *s)
     if (!tail)
         return false;
 
-    tail->value = malloc(sizeof(char) * strlen(s) + 1);
+
+    size_t length;
+    if (!s) {
+        length = 0;
+    } else {
+        length = strlen(s);
+    }
+    tail->value = malloc(sizeof(char) * (length + 1));
     if (!tail->value) {
         free(tail);
         return false;
     }
-    memset(tail->value, '\0', strlen(s) + 1);
-    strncpy(tail->value, s, strlen(s));
+    memset(tail->value, '\0', length + 1);
+    strncpy(tail->value, s, length);
     tail->next = NULL;
 
     if (!q->tail) {
@@ -193,7 +212,8 @@ list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
         return l2;
 
     list_ele_t *tmp, *head;
-    if (!(strcmp(l1->value, l2->value) >= 0)) {
+
+    if (strcmp(l2->value, l1->value) >= 0) {
         tmp = l1;
         l1 = l1->next;
     } else {
@@ -203,7 +223,7 @@ list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
     head = tmp;
 
     while (l1 && l2) {
-        if (!(strcmp(l1->value, l2->value) >= 0)) {  // compare 2 lists
+        if (strcmp(l2->value, l1->value) >= 0) {  // compare 2 lists
             tmp->next = l1;
             l1 = l1->next;
         } else {
